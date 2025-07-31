@@ -126,10 +126,10 @@ gantt
 
 **完了条件**:
 ```
-✅ 4つのシート（Summary, Ratings, Holdings, Dividends）が正しく読み込める
-✅ 各銘柄のデータが4シートから統合される
-✅ "-"や空値が適切にNoneに変換される
-✅ レーティング（A+, B-, F等）が正しく保持される
+📝 4つのシート（Summary, Ratings, Holdings, Dividends）が正しく読み込める
+📝 各銘柄のデータが4シートから統合される
+📝 "-"や空値が適切にNoneに変換される
+📝 レーティング（A+, B-, F等）が正しく保持される
 ```
 
 **Git ブランチ**: `feature/phase2-seekingalpha`
@@ -145,10 +145,10 @@ gantt
 
 **完了条件**:
 ```
-✅ StockData, TradingViewData, SeekingAlphaDataモデルが動作する
-✅ データバリデーションが適切に機能する
-✅ プラットフォーム間でのデータ変換が可能
-✅ 不正なデータで適切なエラーが発生する
+📝 StockData, TradingViewData, SeekingAlphaDataモデルが動作する
+📝 データバリデーションが適切に機能する
+📝 プラットフォーム間でのデータ変換が可能
+📝 不正なデータで適切なエラーが発生する
 ```
 
 **Git ブランチ**: `feature/phase2-models`
@@ -166,10 +166,10 @@ gantt
 
 **完了条件**:
 ```
-✅ TradingView → SeekingAlpha CSV変換が動作する
-✅ SeekingAlpha → TradingView変換が動作する
-✅ セクション情報が適切に保持される
-✅ 往復変換でデータ損失がない
+📝 TradingView → SeekingAlpha CSV変換が動作する
+📝 SeekingAlpha → TradingView変換が動作する
+📝 セクション情報が適切に保持される
+📝 往復変換でデータ損失がない
 ```
 
 **Git ブランチ**: `feature/phase3-converter`
@@ -185,10 +185,10 @@ gantt
 
 **完了条件**:
 ```
-✅ `stock-cli convert --from tradingview --to seekingalpha` が動作する
-✅ `stock-cli convert --from seekingalpha --to tradingview` が動作する
-✅ --preserve-sections オプションが機能する
-✅ 複数ファイルの一括変換が可能
+📝 `stock-cli convert --from tradingview --to seekingalpha` が動作する
+📝 `stock-cli convert --from seekingalpha --to tradingview` が動作する
+📝 --preserve-sections オプションが機能する
+📝 複数ファイルの一括変換が可能
 ```
 
 **Git ブランチ**: `feature/phase3-commands`
@@ -204,10 +204,10 @@ gantt
 
 **完了条件**:
 ```
-✅ 全ての変換パターンでテストが通る
-✅ エラーケースで適切なメッセージが表示される
-✅ 大容量ファイルでも適切な処理時間
-✅ README.mdが更新されている
+📝 全ての変換パターンでテストが通る
+📝 エラーケースで適切なメッセージが表示される
+📝 大容量ファイルでも適切な処理時間
+📝 README.mdが更新されている
 ```
 
 **Git ブランチ**: `feature/phase3-testing`
@@ -226,11 +226,11 @@ gantt
 
 **完了条件**:
 ```
-✅ .envファイルで認証ファイルパスが管理される
-✅ `stock-cli auth setup` で初回認証が完了する
-✅ token.jsonが自動生成・更新される
-✅ 認証エラー時に再認証が促される
-✅ 認証情報が安全に保存される（プロジェクト外のファイルを使用）
+📝 .envファイルで認証ファイルパスが管理される
+📝 `stock-cli auth setup` で初回認証が完了する
+📝 token.jsonが自動生成・更新される
+📝 認証エラー時に再認証が促される
+📝 認証情報が安全に保存される（プロジェクト外のファイルを使用）
 ```
 
 **Git ブランチ**: `feature/phase4-auth`
@@ -246,10 +246,10 @@ gantt
 
 **完了条件**:
 ```
-✅ `stock-cli sheets create` で新規シートが作成される
-✅ 適切なヘッダー行が自動設定される
-✅ 大量データの効率的な書き込みが可能
-✅ API制限エラーで適切なリトライが実行される
+📝 `stock-cli sheets create` で新規シートが作成される
+📝 適切なヘッダー行が自動設定される
+📝 大量データの効率的な書き込みが可能
+📝 API制限エラーで適切なリトライが実行される
 ```
 
 **Git ブランチ**: `feature/phase4-client`
@@ -265,10 +265,10 @@ gantt
 
 **完了条件**:
 ```
-✅ `stock-cli sheets import` でファイルからシートに取り込める
-✅ `stock-cli sheets export` でシートからファイルに出力できる
-✅ 差分更新で効率的な同期が可能
-✅ 全機能の統合テストが通る
+📝 `stock-cli sheets import` でファイルからシートに取り込める
+📝 `stock-cli sheets export` でシートからファイルに出力できる
+📝 差分更新で効率的な同期が可能
+📝 全機能の統合テストが通る
 ```
 
 **Git ブランチ**: `feature/phase4-sync`
