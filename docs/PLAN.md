@@ -126,10 +126,10 @@ gantt
 
 **完了条件**:
 ```
-📝 4つのシート（Summary, Ratings, Holdings, Dividends）が正しく読み込める
-📝 各銘柄のデータが4シートから統合される
-📝 "-"や空値が適切にNoneに変換される
-📝 レーティング（A+, B-, F等）が正しく保持される
+✅ 4つのシート（Summary, Ratings, Holdings, Dividends）が正しく読み込める
+✅ 各銘柄のデータが4シートから統合される
+✅ "-"や空値が適切にNoneに変換される
+✅ レーティング（A+, B-, F等）が正しく保持される
 ```
 
 **Git ブランチ**: `feature/phase2-seekingalpha`
