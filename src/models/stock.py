@@ -5,6 +5,16 @@ class TradingViewData(BaseModel):
     """TradingView固有のデータを保持するモデル"""
     section: Optional[str] = None
 
+class SeekingAlphaData(BaseModel):
+    """SeekingAlpha固有のデータを保持するモデル"""
+    price: Optional[float] = None
+    valuation_grade: Optional[str] = None
+    profitability_grade: Optional[str] = None
+    shares: Optional[float] = None
+    cost: Optional[float] = None
+    value: Optional[float] = None
+    dividend_safety: Optional[str] = None
+
 class StockData(BaseModel):
     """統一された株式データモデル"""
     symbol: str = Field(..., description="ティッカーシンボル")

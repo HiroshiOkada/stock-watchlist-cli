@@ -14,6 +14,7 @@ dependencies = [
     "pandas>=1.5.0",
     "openpyxl>=3.0.0",
     "chardet>=5.0.0",
+    "python-calamine",
     # Google Sheets連携
     "gspread>=5.7.0",
     "google-auth>=2.15.0",
