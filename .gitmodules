@@ -1,0 +1,4 @@
+[submodule ".roo"]
+	path = .roo
+	url = https://github.com/HiroshiOkada/roo-rules.git
+	branch = rules-only
