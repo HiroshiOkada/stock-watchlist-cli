@@ -8,7 +8,6 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 import gspread
-import click
 
 logger = logging.getLogger(__name__)
 
@@ -62,14 +61,8 @@ class GoogleSheetsAuth:
             raise FileNotFoundError(f"認証ファイルが見つかりません: {self.credentials_file}")
         
         logger.info("OAuth認証フローを開始します...")
-        click.echo("ブラウザで認証を行ってください。")
-        click.echo("以下のURLをブラウザで開き、アカウントを選択してアクセスを許可してください。")
-        
         flow = InstalledAppFlow.from_client_secrets_file(str(self.credentials_file), self.scopes)
-        
-        # 自動でブラウザを開く代わりに、コンソールで手動認証を行う
-        creds = flow.run_console()
-        
+        creds = flow.run_local_server(port=self.port)
         logger.info("OAuth認証が完了しました")
         return creds
 

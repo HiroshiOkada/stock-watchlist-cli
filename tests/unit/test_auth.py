@@ -41,9 +41,9 @@ class TestGoogleSheetsAuth:
     def test_no_token_file_performs_oauth_flow(self, auth_manager, mocker):
         """トークンファイルが存在しない場合、OAuthフローが実行されることをテスト"""
         mock_flow = mocker.patch('google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file')
-        mock_run_console = mock_flow.return_value.run_console
+        mock_run_local = mock_flow.return_value.run_local_server
         # to_jsonが文字列を返すように設定
-        mock_run_console.return_value.to_json.return_value = '{}'
+        mock_run_local.return_value.to_json.return_value = '{}'
         
         # ダミーのトークンファイルが存在しないことを確認
         if auth_manager.token_file.exists():
@@ -52,7 +52,7 @@ class TestGoogleSheetsAuth:
         auth_manager.get_credentials()
         
         mock_flow.assert_called_once()
-        mock_run_console.assert_called_once()
+        mock_run_local.assert_called_once()
 
     def test_existing_valid_token_is_used(self, auth_manager, mocker):
         """有効なトークンファイルが存在する場合、それが使用されることをテスト"""
