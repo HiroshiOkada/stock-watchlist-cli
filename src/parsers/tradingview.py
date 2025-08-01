@@ -14,7 +14,7 @@ class TradingViewParser(BaseParser):
     
     def __init__(self):
         self.supported_exchanges = ['NASDAQ', 'NYSE', 'AMEX', 'TSE', 'LSE', 'FRA']
-        self.section_pattern = r'^###SECTION\s*(.+)$'
+        self.section_pattern = r'^###(SECTION\s*.+)$'
         self.symbol_pattern = r'^(?P<exchange>[A-Z]+):(?P<symbol>[A-Z0-9\.\-]+)$'
     
     def parse(self, file_path: Union[str, Path]) -> List[TradingViewData]:
@@ -77,7 +77,7 @@ class TradingViewParser(BaseParser):
                 else:
                     logger.warning(f"Invalid symbol format for item: {item_symbol}")
                             
-    return tradingview_data_list
+        return tradingview_data_list
 
     def validate_format(self, file_path: Union[str, Path]) -> bool:
         """ファイル形式の妥当性を検証"""
