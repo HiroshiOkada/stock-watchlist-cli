@@ -41,7 +41,7 @@ class FormatConverter:
             date_updated=datetime.now(),
             tradingview_section=tv_data.section,
             # SeekingAlpha関連のフィールドはNoneで初期化
-            company_name=None,
+            name=None,
             current_price=None,
             change=None,
             change_percent=None,
@@ -94,6 +94,13 @@ class FormatConverter:
         # SeekingAlphaDataの全てのフィールドを辞書として取得し、StockDataに渡す
         # StockDataに存在しないフィールドは無視される
         stock_data_dict = sa_data.model_dump(exclude_none=False)
+        # company_nameをnameにマッピング
+        if 'company_name' in stock_data_dict:
+            stock_data_dict['name'] = stock_data_dict.pop('company_name')
+        # priceをcurrent_priceにマッピング
+        if 'price' in stock_data_dict:
+            stock_data_dict['current_price'] = stock_data_dict.pop('price')
+
         stock_data_dict.update({
             "full_symbol": full_symbol,
             "source_platform": "seekingalpha",
@@ -133,9 +140,20 @@ class FormatConverter:
         """
         logger.info(f"StockDataをSeekingAlphaDataに変換中: {stock_data.symbol}")
         logger.info(f"StockDataをSeekingAlphaDataに変換中: {stock_data.symbol}")
-        # StockDataの全てのフィールドを辞書として取得し、SeekingAlphaDataに渡す
-        # SeekingAlphaDataに存在しないフィールドは無視される
-        return SeekingAlphaData(**stock_data.model_dump(exclude_none=True))
+        sa_data_dict = stock_data.model_dump(exclude_none=True)
+        # nameをcompany_nameにマッピング
+        if 'name' in sa_data_dict:
+            sa_data_dict['company_name'] = sa_data_dict.pop('name')
+        # current_priceをpriceにマッピング
+        if 'current_price' in sa_data_dict:
+            sa_data_dict['price'] = sa_data_dict.pop('current_price')
+        
+        # StockDataのフィールドでSeekingAlphaDataに存在しないものを削除
+        # SeekingAlphaDataのフィールドリストを取得
+        seekingalpha_fields = set(SeekingAlphaData.model_fields.keys())
+        filtered_sa_data_dict = {k: v for k, v in sa_data_dict.items() if k in seekingalpha_fields}
+
+        return SeekingAlphaData(**filtered_sa_data_dict)
 
     def convert_list(self, data_list: List[PlatformData], target_platform: str) -> List[PlatformData]:
         """

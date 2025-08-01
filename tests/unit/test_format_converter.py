@@ -190,7 +190,7 @@ class TestFormatConverter:
         stock_data = converter.to_stock_data(sa_data)
         assert isinstance(stock_data, StockData)
         assert stock_data.symbol == sa_data.symbol
-        assert getattr(stock_data, 'company_name', None) == sa_data.company_name
+        assert stock_data.name == sa_data.company_name
         assert stock_data.current_price == sa_data.price
         assert stock_data.quant_rating == sa_data.quant_rating
         assert stock_data.source_platform == "seekingalpha"
