@@ -164,6 +164,24 @@
 - `convert_list` メソッドでデータリストの一括変換をサポート。
 - `convert_to_csv` メソッドで `SeekingAlphaData` のリストをCSV形式に変換。
 - `convert_to_tradingview_txt` メソッドで `TradingViewData` のリストをTradingViewテキスト形式に変換（セクション保持機能付き）。
+### ✅ Phase 4.2: Sheetsクライアント（2025-08-01完了）
+
+**実装内容**:
+- `src/google_sheets/client.py` に `GoogleSheetsClient` クラスを実装。
+- スプレッドシートの作成 (`create_spreadsheet`)、IDによる取得 (`get_spreadsheet_by_id`) 機能を追加。
+- スプレッドシート作成時に、仕様書通りのヘッダーを自動で設定する (`setup_default_headers`) 機能を追加。
+- `StockData` のリストを受け取り、シートに一括で書き込むバッチ更新機能 (`update_sheet_with_data`) を実装。
+- `gspread` の各種オブジェクトをモック化し、`GoogleSheetsClient` の各メソッドが期待通りに動作することを検証する単体テストを作成。
+
+**技術的成果**:
+- `gspread` ライブラリをラップし、本プロジェクトに特化した高レベルなAPIを提供できた。
+- `pytest-mock` を活用し、外部APIに依存するクラスの単体テストを効率的に実装できた。
+
+**学習事項**:
+- `gspread` v5以降のAPI仕様の変更（`gspread.models`の廃止など）。
+- Pydanticモデルのバリデーションエラーをデバッグし、テストデータの不備を修正するプロセス。
+
+**Git記録**: コミット `2120c59`
 - `src/models/stock.py` の `StockData`, `TradingViewData`, `SeekingAlphaData` モデルを更新し、必要なフィールドを追加・調整。
 
 **技術的成果**:
