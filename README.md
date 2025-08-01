@@ -45,19 +45,49 @@ cp .env.example .env
 
 ## 使用方法
 
-### 基本コマンド
+### ファイル変換 (`convert`)
+
+`convert` コマンドは、異なるプラットフォームのウォッチリスト形式を相互に変換します。
+
+**基本構文**:
+```bash
+stock-cli convert --from <source> --to <target> --input <infile> --output <outfile> [options]
+```
+
+**使用例**:
 
 ```bash
-# ヘルプの表示
-stock-cli --help
+# TradingView形式からSeekingAlpha形式(CSV)へ変換
+stock-cli convert \
+  --from tradingview \
+  --to seekingalpha \
+  --input sample/US_STOCK_012ed.txt \
+  --output portfolio.csv
 
-# バージョン確認
-stock-cli --version
+# SeekingAlpha形式(Excel)からTradingView形式へ変換
+# --preserve-sections オプションでセクション情報を保持
+stock-cli convert \
+  --from seekingalpha \
+  --to tradingview \
+  --input sample/UsStock\ 2025-07-30.xlsx \
+  --output watchlist.txt \
+  --preserve-sections
 
-# ファイル変換
-stock-cli convert --from tradingview --to seekingalpha --input input.txt --output output.csv
+# セクター情報に基づいてセクションを自動生成
+stock-cli convert \
+  --from seekingalpha \
+  --to tradingview \
+  --input sample/UsStock\ 2025-07-30.xlsx \
+  --output watchlist_by_sector.txt \
+  --create-sections-by-sector
+```
 
-# Google Sheets連携
+### Google Sheets連携 (`sheets`)
+
+Google Sheetsとの間でデータをインポート・エクスポートします。（実装中）
+
+```bash
+# Google Sheetsへインポート
 stock-cli sheets import --file data.xlsx --spreadsheet-id "your_sheet_id"
 ```
 
