@@ -20,8 +20,9 @@ class GoogleSheetsAuth:
                  token_file: str,
                  scopes: List[str],
                  port: int = 8080):
-        self.credentials_file = Path(credentials_file)
-        self.token_file = Path(token_file)
+        # チルダ(~)をホームディレクトリに展開する
+        self.credentials_file = Path(credentials_file).expanduser()
+        self.token_file = Path(token_file).expanduser()
         self.scopes = scopes
         self.port = port
         logger.info(f"GoogleSheetsAuth initialized with credentials: {self.credentials_file}")
