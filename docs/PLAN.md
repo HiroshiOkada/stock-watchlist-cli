@@ -145,10 +145,10 @@ gantt
 
 **完了条件**:
 ```
-📝 StockData, TradingViewData, SeekingAlphaDataモデルが動作する
-📝 データバリデーションが適切に機能する
-📝 プラットフォーム間でのデータ変換が可能
-📝 不正なデータで適切なエラーが発生する
+✅ StockData, TradingViewData, SeekingAlphaDataモデルが動作する
+✅ データバリデーションが適切に機能する
+✅ プラットフォーム間でのデータ変換が可能
+✅ 不正なデータで適切なエラーが発生する
 ```
 
 **Git ブランチ**: `feature/phase2-models`
