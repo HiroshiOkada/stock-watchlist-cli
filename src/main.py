@@ -4,7 +4,8 @@ import click
 from typing import Optional
 
 from src.utils.logging_config import setup_logging, get_logger
-from src.config.settings import get_config
+from src.config.settings import get_config, AppConfig
+from src.google_sheets.auth import GoogleSheetsAuth
 
 
 @click.group()
@@ -103,10 +104,54 @@ def convert(ctx: click.Context, from_format: str, to_format: str, input_path: st
         click.echo(f"エラー: {e}", err=True)
         ctx.exit(1)
 
-@cli.command()
+@click.group()
+def auth():
+    """Google認証関連のコマンド"""
+    pass
+
+@auth.command()
+@click.pass_context
+def setup(ctx: click.Context):
+    """Google APIの認証を行い、トークンファイルを作成する"""
+    logger = get_logger('main')
+    try:
+        config: AppConfig = ctx.obj['config']
+        gs_config = config.google_sheets
+        
+        logger.info("Google認証セットアップを開始します...")
+        auth_manager = GoogleSheetsAuth(
+            credentials_file=gs_config.credentials_file,
+            token_file=gs_config.token_file,
+            scopes=[
+                "https://www.googleapis.com/auth/spreadsheets",
+                "https://www.googleapis.com/auth/drive"
+            ],
+            port=gs_config.oauth_port
+        )
+        
+        # 認証実行
+        auth_manager.get_credentials()
+        
+        click.echo("認証に成功し、トークンファイルが正常に作成・更新されました。")
+        logger.info("Google認証セットアップが正常に完了しました。")
+        
+    except FileNotFoundError as e:
+        logger.error(f"認証ファイルが見つかりません: {e}")
+        click.echo(f"エラー: {e}", err=True)
+        click.echo("ヒント: .envファイルで 'GOOGLE_CREDENTIALS_FILE' が正しく設定されているか確認してください。")
+        ctx.exit(1)
+    except Exception as e:
+        logger.error(f"Google認証中に予期せぬエラーが発生しました: {e}")
+        click.echo(f"エラー: {e}", err=True)
+        ctx.exit(1)
+
+@cli.group()
 def sheets() -> None:
     """Google Sheets連携コマンド"""
     pass
+
+# cliにauthコマンドグループを追加
+cli.add_command(auth)
 
 @cli.command()
 def analyze() -> None:
