@@ -263,6 +263,41 @@ def sheets_export(ctx: click.Context, spreadsheet_id: str, sheet_name: str, outp
         click.echo(f"エラー: {e}", err=True)
         ctx.exit(1)
 
+@sheets.command('create')
+@click.option('--name', required=True, help='作成するスプレッドシートの名前')
+@click.pass_context
+def sheets_create(ctx: click.Context, name: str):
+    """新しいGoogleスプレッドシートを作成する"""
+    logger = get_logger('main')
+    config: AppConfig = ctx.obj['config']
+    
+    try:
+        logger.info(f"新しいスプレッドシート '{name}' を作成します...")
+        
+        auth_manager = GoogleSheetsAuth(
+            credentials_file=config.google_sheets.credentials_file,
+            token_file=config.google_sheets.token_file,
+            scopes=[
+                "https://www.googleapis.com/auth/spreadsheets",
+                "https://www.googleapis.com/auth/drive"
+            ]
+        )
+        from src.google_sheets.client import GoogleSheetsClient
+        sheets_client = GoogleSheetsClient(auth_manager)
+        
+        spreadsheet = sheets_client.create_spreadsheet(name)
+        
+        click.echo("スプレッドシートが正常に作成されました。")
+        click.echo(f"  名前: {spreadsheet.title}")
+        click.echo(f"  ID: {spreadsheet.id}")
+        click.echo(f"  URL: {spreadsheet.url}")
+        logger.info(f"スプレッドシートの作成が完了しました: {spreadsheet.url}")
+
+    except Exception as e:
+        logger.error(f"スプレッドシート作成中にエラーが発生しました: {e}")
+        click.echo(f"エラー: {e}", err=True)
+        ctx.exit(1)
+
 # cliにauthコマンドグループを追加
 cli.add_command(auth)
 

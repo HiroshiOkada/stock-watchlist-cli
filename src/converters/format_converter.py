@@ -246,6 +246,11 @@ class FormatConverter:
             if not mapped_rec.get("source_platform"):
                 mapped_rec["source_platform"] = "googlesheets"
 
+            # 数値フィールドの空文字列をNoneに変換
+            for field, model_field in StockData.model_fields.items():
+                if model_field.annotation in [Optional[float], Optional[int]] and mapped_rec.get(field) == '':
+                    mapped_rec[field] = None
+
             try:
                 stock_data_list.append(StockData(**mapped_rec))
             except Exception as e:

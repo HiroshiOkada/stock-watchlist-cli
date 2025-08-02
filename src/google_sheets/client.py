@@ -1,6 +1,7 @@
 """Google Sheets API クライアントモジュール"""
 import logging
 from typing import List, Dict, Any, Optional
+from datetime import datetime
 
 import gspread
 from gspread.spreadsheet import Spreadsheet
@@ -28,6 +29,11 @@ class GoogleSheetsClient:
             # デフォルトのヘッダーを設定
             self.setup_default_headers(spreadsheet)
             
+            # デフォルトのシート名を "Stock_Data" に変更
+            worksheet = spreadsheet.get_worksheet(0)
+            worksheet.update_title("Stock_Data")
+            logger.info("デフォルトのシート名を 'Stock_Data' に変更しました。")
+
             return spreadsheet
         except Exception as e:
             logger.error(f"スプレッドシートの作成に失敗しました: {e}")
@@ -93,7 +99,15 @@ class GoogleSheetsClient:
             # StockDataをヘッダー順のリストのリストに変換
             values_to_update = []
             for stock in data:
-                row = [getattr(stock, header.lower(), "") for header in headers]
+                row = []
+                for header in headers:
+                    value = getattr(stock, header.lower(), "")
+                    if isinstance(value, datetime):
+                        row.append(value.isoformat())
+                    elif value is None:
+                        row.append("")
+                    else:
+                        row.append(value)
                 values_to_update.append(row)
             
             if not values_to_update:
