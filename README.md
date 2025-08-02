@@ -84,11 +84,17 @@ stock-cli convert \
 
 ### Google Sheets連携 (`sheets`)
 
-Google Sheetsとの間でデータをインポート・エクスポートします。（実装中）
+Google Sheetsとの間でデータをインポート・エクスポートします。
 
 ```bash
-# Google Sheetsへインポート
+# 新しいスプレッドシートを作成
+stock-cli sheets create --name "My New Watchlist"
+
+# ファイルをスプレッドシートにインポート
 stock-cli sheets import --file data.xlsx --spreadsheet-id "your_sheet_id"
+
+# スプレッドシートからファイルにエクスポート
+stock-cli sheets export --spreadsheet-id "your_sheet_id" --format tradingview --output watchlist.txt
 ```
 
 ### サポートする形式
