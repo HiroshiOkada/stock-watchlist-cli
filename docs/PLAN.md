@@ -265,8 +265,8 @@ gantt
 
 **完了条件**:
 ```
-📝 `stock-cli sheets import` でファイルからシートに取り込める
-📝 `stock-cli sheets export` でシートからファイルに出力できる
+✅ `stock-cli sheets import` でファイルからシートに取り込める
+✅ `stock-cli sheets export` でシートからファイルに出力できる
 📝 差分更新で効率的な同期が可能
 📝 全機能の統合テストが通る
 ```

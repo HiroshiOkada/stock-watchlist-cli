@@ -164,6 +164,24 @@
 - `convert_list` メソッドでデータリストの一括変換をサポート。
 - `convert_to_csv` メソッドで `SeekingAlphaData` のリストをCSV形式に変換。
 - `convert_to_tradingview_txt` メソッドで `TradingViewData` のリストをTradingViewテキスト形式に変換（セクション保持機能付き）。
+### ✅ Phase 4.3: データ同期機能（2025-08-02完了）
+
+**実装内容**:
+- `src/main.py` の `sheets` コマンドグループに `import` と `export` サブコマンドを実装。
+- `import` コマンドは、指定されたローカルファイル（TradingView/SeekingAlpha形式）をパースし、`GoogleSheetsClient` を使ってスプレッドシートにデータを書き込む。
+- `export` コマンドは、指定されたスプレッドシートからデータを読み込み、`FormatConverter` を使って指定された形式（TradingView/CSV）に変換し、ファイルまたは標準出力に出力する。
+- `FormatConverter` に、Sheets APIから取得した辞書のリストを `StockData` のリストに変換する `from_records` メソッドを追加。
+- `CliRunner` とモックを使い、`sheets import/export` コマンドが各コンポーネントを正しく呼び出していることを検証する単体テストを作成。
+
+**技術的成果**:
+- これまで実装してきたパーサー、コンバーター、Sheetsクライアントの各モジュールをCLIコマンドとして統合し、エンドツーエンドに近い機能を実現できた。
+- 複雑な依存関係を持つCLIコマンドを、`@patch`デコレータを駆使して効果的にテストする手法を確立した。
+
+**学習事項**:
+- `unittest.mock.patch` でモック化する際のターゲット指定の重要性。オブジェクトが「定義された場所」ではなく「使用される場所」のスコープを意識する必要がある。
+- Pydanticモデルのバリデーションは、テストデータ作成時にも厳密に適用されるため、必須フィールドの渡し忘れに注意が必要であること。
+
+**Git記録**: コミット `ab286f7`
 ### ✅ Phase 4.2: Sheetsクライアント（2025-08-01完了）
 
 **実装内容**:
