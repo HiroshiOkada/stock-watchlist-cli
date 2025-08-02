@@ -129,20 +129,11 @@ MSFT,75,300.25,2024-01-17
 **フォーマット**: シンプルな統合スキーマ（管理はGoogle Sheets上で実施）
 
 #### メインデータシート
+Google Sheetsで管理されるデータのヘッダー項目です。
 ```
-A列: Symbol (銘柄コード)
-B列: Exchange (取引所)
-C列: Company_Name (会社名)
-D列: Current_Price (現在価格)
-E列: Source_Platform (データソース)
-F列: TradingView_Section (セクション名)
-G列: Quant_Rating (Quantレーティング)
-H列: SA_Analyst_Rating (SA アナリストレーティング)
-I列: Valuation_Grade (バリュエーショングレード)
-J列: Dividend_Safety (配当安全性)
-K列: Yield_TTM (配当利回り)
-L列: Date_Updated (更新日)
-M列: Notes (メモ)
+Symbol, Exchange, Company_Name, Current_Price, Source_Platform,
+TradingView_Section, Quant_Rating, SA_Analyst_Rating, Valuation_Grade,
+Dividend_Safety, Yield_TTM, Date_Updated, Notes
 ```
 
 **設計方針**: 
@@ -152,7 +143,7 @@ M列: Notes (メモ)
 
 ## 4. プログラム構造
 
-### 4.1 ディレクトリ構成
+### 4.1 ディレクトリ構成（実績）
 ```
 stock_watchlist_cli/
 ├── src/
@@ -160,44 +151,33 @@ stock_watchlist_cli/
 │   ├── main.py                 # CLIエントリーポイント
 │   ├── config/
 │   │   ├── __init__.py
-│   │   ├── settings.py         # 設定管理
-│   │   └── credentials.py      # 認証情報管理
+│   │   └── settings.py         # 設定管理
 │   ├── parsers/
 │   │   ├── __init__.py
 │   │   ├── base_parser.py      # 基底パーサークラス
-│   │   ├── tradingview_parser.py # TradingViewパーサー
-│   │   └── seekingalpha_parser.py # Seeking Alphaパーサー
+│   │   ├── tradingview.py      # TradingViewパーサー
+│   │   └── seekingalpha.py     # Seeking Alphaパーサー
 │   ├── converters/
 │   │   ├── __init__.py
-│   │   ├── format_converter.py # フォーマット変換
-│   │   └── markdown_formatter.py # Markdown出力（LLM用）
+│   │   └── format_converter.py # フォーマット変換
 │   ├── google_sheets/
 │   │   ├── __init__.py
-│   │   ├── auth.py            # Google認証（OAuth2対応）
-│   │   ├── client.py          # Sheetsクライアント
-│   │   └── operations.py      # 基本的なCRUD操作
+│   │   ├── auth.py             # Google認証
+│   │   └── client.py           # Sheetsクライアント
 │   ├── models/
 │   │   ├── __init__.py
-│   │   ├── stock_data.py      # データモデル
-│   │   └── exceptions.py      # カスタム例外
+│   │   └── stock.py            # データモデル
 │   └── utils/
 │       ├── __init__.py
-│       ├── file_utils.py      # ファイル操作
-│       └── logging_config.py  # ログ設定
+│       ├── file_io.py          # ファイル操作
+│       └── logging_config.py   # ログ設定
 ├── tests/
-│   ├── __init__.py
-│   ├── test_parsers.py
-│   ├── test_converters.py
-│   ├── test_google_sheets.py
-│   └── sample_data/           # テスト用サンプルファイル
+│   └── unit/                   # 単体テスト
 ├── docs/
-│   ├── README.md
-│   └── SETUP.md              # セットアップガイド
+│   ├── spec.md, PLAN.md, DEV_LOG.md
 ├── config/
-│   └── config.yaml           # 設定ファイル
-├── requirements.txt
-├── setup.py
-└── .env.example              # 環境変数テンプレート
+│   └── config.yaml
+└── .env.example
 ```
 
 ### 4.2 主要クラス設計
@@ -344,30 +324,22 @@ class GoogleSheetsClient:
         worksheet.update('A1:L1', [headers])
         self.logger.info("初期ヘッダーを設定しました")
 
-#### 4.2.3 データモデル (models/stock_data.py)
+#### 4.2.3 データモデル (models/stock.py)
+Pydanticを利用した型安全なデータモデル。`StockData`を基盤とし、各プラットフォーム固有のデータモデル（`TradingViewData`, `SeekingAlphaData`）がそれを継承します。
+*実際のコードでは、より多くのフィールドと詳細なバリデーションが実装されています。*
 ```python
-from pydantic import BaseModel, validator
-from datetime import datetime
-from typing import Optional, Literal
-
+# (抜粋)
 class StockData(BaseModel):
     symbol: str
-    company_name: Optional[str] = None
     exchange: Optional[str] = None
-    sector: Optional[str] = None
-    source_platform: Literal["rakuten", "tradingview", "seekingalpha"]
-    quantity: Optional[float] = None
-    cost: Optional[float] = None
-    date_added: datetime
+    full_symbol: str
+    source_platform: str
     date_updated: datetime
-    notes: Optional[str] = None
-    status: Literal["active", "inactive"] = "active"
+    # ... SeekingAlphaの多数のデータフィールド
     
-    @validator('symbol')
-    def validate_symbol(cls, v):
-        if not v or len(v.strip()) == 0:
-            raise ValueError('Symbol cannot be empty')
-        return v.strip().upper()
+    @field_validator('symbol', 'exchange')
+    def uppercase_strings(cls, v):
+        return v.upper() if v else v
 ```
 
 #### 4.2.3 TradingViewパーサー (parsers/tradingview_parser.py)
@@ -577,155 +549,37 @@ class BaseParser(ABC):
 
 ## 5. 機能仕様
 
-### 5.1 基本コマンド
+### 5.1 コマンド仕様（実績）
 
-#### 5.1.1 ファイル変換（実データ対応）
+#### `convert`
+ファイル形式を相互に変換します。
 ```bash
-# TradingView → Seeking Alpha（実際のファイル例）
-stock-cli convert \
-  --from tradingview \
-  --to seekingalpha \
-  --input "US_STOCK_012ed.txt" \
-  --output portfolio.csv \
-  --preserve-sections
-
-# Seeking Alpha → TradingView（セクション付き）
-stock-cli convert \
-  --from seekingalpha \
-  --to tradingview \
-  --input "UsStock 2025-07-30.xlsx" \
-  --output tradingview_list.txt \
-  --create-sections-by-sector
-
-# TradingView → Google Sheets（セクション情報保持）
-stock-cli convert \
-  --from tradingview \
-  --to googlesheets \
-  --input "US_STOCK_012ed.txt" \
-  --spreadsheet-id "your_sheet_id" \
-  --import-sections
-
-# セクションのみを抽出
-stock-cli convert \
-  --from tradingview \
-  --to tradingview \
-  --input "US_STOCK_012ed.txt" \
-  --output filtered_list.txt \
-  --section "SECTION 1" \
-  --exclude-sections
+# TradingView形式からSeekingAlpha形式(CSV)へ変換
+stock-cli convert --from tradingview --to seekingalpha --input <file> --output <file>
 ```
 
-#### 5.1.2 TradingView特化コマンド（新規追加）
+#### `auth`
+Google認証を管理します。
 ```bash
-# セクション情報の表示
-stock-cli tradingview analyze \
-  --file "US_STOCK_012ed.txt" \
-  --show-sections \
-  --show-stats
-
-# セクション別分割エクスポート
-stock-cli tradingview split \
-  --input "US_STOCK_012ed.txt" \
-  --output-dir "./sections/" \
-  --format individual-files
-
-# 取引所別統計
-stock-cli tradingview stats \
-  --file "US_STOCK_012ed.txt" \
-  --group-by exchange \
-  --output stats.json
-
-# セクションの結合
-stock-cli tradingview merge \
-  --input-dir "./sections/" \
-  --output "merged_watchlist.txt" \
-  --add-section-markers
-
-# 重複チェック・クリーンアップ
-stock-cli tradingview cleanup \
-  --input "US_STOCK_012ed.txt" \
-  --remove-duplicates \
-  --validate-symbols \
-  --output cleaned_list.txt
+# 初回認証または再認証
+stock-cli auth setup
 ```
 
-#### 5.1.2 Google Sheets操作（Seeking Alpha拡張対応）
+#### `sheets`
+Google Sheetsとのデータ連携を行います。
 ```bash
-# 新規スプレッドシート作成（4シート構成）
-stock-cli sheets create --name "My Stock Portfolio" --template seekingalpha-full
+# 新規スプレッドシートを作成
+stock-cli sheets create --name <sheet_name>
 
-# Seeking Alphaファイルのインポート（4シート対応）
-stock-cli sheets import \
-  --file "UsStock 2025-07-30.xlsx" \
-  --format seekingalpha \
-  --spreadsheet-id "sheet_id" \
-  --preserve-all-data
+# ファイルをスプレッドシートにインポート
+stock-cli sheets import --file <file> --format <format> --spreadsheet-id <id>
 
-# 特定シートのみインポート
-stock-cli sheets import \
-  --file "UsStock 2025-07-30.xlsx" \
-  --format seekingalpha \
-  --sheets "Summary,Holdings" \
-  --spreadsheet-id "sheet_id"
-
-# データのエクスポート（シート別）
-stock-cli sheets export \
-  --spreadsheet-id "sheet_id" \
-  --sheet "Holdings" \
-  --format tradingview \
-  --output exported_list.txt
-
-# 全データの統合エクスポート
-stock-cli sheets export \
-  --spreadsheet-id "sheet_id" \
-  --format seekingalpha-summary \
-  --output portfolio_summary.xlsx
-
-# 詳細データ分析（Seeking Alphaデータ活用）
-stock-cli analyze \
-  --spreadsheet-id "sheet_id" \
-  --metric "dividend_yield" \
-  --top 10 \
-  --output analysis_report.csv
-
-# データの同期（高度な設定）
-stock-cli sheets sync \
-  --local-file "UsStock 2025-07-30.xlsx" \
-  --spreadsheet-id "sheet_id" \
-  --mode seekingalpha-full \
-  --preserve-ratings \
-  --update-prices-only
+# スプレッドシートからファイルにエクスポート
+stock-cli sheets export --spreadsheet-id <id> --format <format> --output <file>
 ```
 
-#### 5.1.3 データ分析コマンド（新規追加）
-```bash
-# レーティング分析
-stock-cli analyze ratings \
-  --spreadsheet-id "sheet_id" \
-  --filter "quant_rating>4.0" \
-  --sort "sa_analyst_rating desc"
-
-# 配当分析
-stock-cli analyze dividends \
-  --spreadsheet-id "sheet_id" \
-  --min-yield 0.02 \
-  --safety-grade "A,B" \
-  --output dividend_candidates.xlsx
-
-# ポートフォリオパフォーマンス分析
-stock-cli analyze performance \
-  --spreadsheet-id "sheet_id" \
-  --period "1M,3M,6M" \
-  --benchmark "SPY" \
-  --output performance_report.pdf
-
-# バリュエーション分析
-stock-cli analyze valuation \
-  --spreadsheet-id "sheet_id" \
-  --metrics "PE,PB,PEG" \
-  --sector-comparison \
-  --output valuation_analysis.xlsx
-```
+#### `analyze`
+データ分析機能。（**注: このコマンドは将来の拡張用であり、現在は実装されていません**）
 
 #### 5.1.3 バッチ処理
 ```bash

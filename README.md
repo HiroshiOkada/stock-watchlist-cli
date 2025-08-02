@@ -43,65 +43,39 @@ cp .env.example .env
 # GOOGLE_CREDENTIALS_FILE=~/dot.hiroshi-project-2025.client_secret.json
 ```
 
-## 使用方法
+## コマンドリファレンス
 
-### ファイル変換 (`convert`)
-
-`convert` コマンドは、異なるプラットフォームのウォッチリスト形式を相互に変換します。
-
-**基本構文**:
-```bash
-stock-cli convert --from <source> --to <target> --input <infile> --output <outfile> [options]
-```
-
-**使用例**:
+### `convert`
+異なるプラットフォームのウォッチリスト形式を相互に変換します。
 
 ```bash
 # TradingView形式からSeekingAlpha形式(CSV)へ変換
-stock-cli convert \
-  --from tradingview \
-  --to seekingalpha \
-  --input sample/US_STOCK_012ed.txt \
-  --output portfolio.csv
+stock-cli convert --from tradingview --to seekingalpha --input sample/US_STOCK_012ed.txt --output portfolio.csv
 
 # SeekingAlpha形式(Excel)からTradingView形式へ変換
-# --preserve-sections オプションでセクション情報を保持
-stock-cli convert \
-  --from seekingalpha \
-  --to tradingview \
-  --input sample/UsStock\ 2025-07-30.xlsx \
-  --output watchlist.txt \
-  --preserve-sections
-
-# セクター情報に基づいてセクションを自動生成
-stock-cli convert \
-  --from seekingalpha \
-  --to tradingview \
-  --input sample/UsStock\ 2025-07-30.xlsx \
-  --output watchlist_by_sector.txt \
-  --create-sections-by-sector
+stock-cli convert --from seekingalpha --to tradingview --input sample/UsStock_2025-07-30.xlsx --output watchlist.txt
 ```
+利用可能なオプションの詳細は `stock-cli convert --help` を参照してください。
 
-### Google Sheets連携 (`sheets`)
-
-Google Sheetsとの間でデータをインポート・エクスポートします。
+### `sheets`
+Google Sheetsとの認証、データ連携を行います。
 
 ```bash
-# 新しいスプレッドシートを作成
+# 1. Googleアカウント認証 (初回のみ)
+stock-cli auth setup
+
+# 2. 新しいスプレッドシートを作成
 stock-cli sheets create --name "My New Watchlist"
 
-# ファイルをスプレッドシートにインポート
-stock-cli sheets import --file data.xlsx --spreadsheet-id "your_sheet_id"
+# 3. ローカルファイルをスプレッドシートにインポート
+stock-cli sheets import --file sample/US_STOCK_012ed.txt --format tradingview --spreadsheet-id "your_sheet_id"
 
-# スプレッドシートからファイルにエクスポート
+# 4. スプレッドシートからローカルファイルにエクスポート
 stock-cli sheets export --spreadsheet-id "your_sheet_id" --format tradingview --output watchlist.txt
 ```
 
-### サポートする形式
-
-- **TradingView**: テキストファイル (.txt) - セクション区切り対応
-- **Seeking Alpha**: Excelファイル (.xlsx) - 4シート構成
-- **Google Sheets**: OAuth2.0認証による直接連携
+### `analyze`
+データ分析機能です。（現在、コマンドの骨組みのみで実装されていません）
 
 ## 開発
 
