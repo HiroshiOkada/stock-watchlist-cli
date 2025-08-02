@@ -150,6 +150,119 @@ def sheets() -> None:
     """Google Sheets連携コマンド"""
     pass
 
+@sheets.command('import')
+@click.option('--file', 'file_path', required=True, type=click.Path(exists=True), help='インポートするファイルパス')
+@click.option('--format', 'file_format', required=True, type=click.Choice(['tradingview', 'seekingalpha']), help='インポートするファイル形式')
+@click.option('--spreadsheet-id', required=True, help='インポート先のスプレッドシートID')
+@click.option('--sheet-name', default='Stock_Data', help='インポート先のシート名')
+@click.pass_context
+def sheets_import(ctx: click.Context, file_path: str, file_format: str, spreadsheet_id: str, sheet_name: str):
+    """ローカルファイルをGoogle Sheetsにインポートする"""
+    logger = get_logger('main')
+    config: AppConfig = ctx.obj['config']
+    
+    try:
+        logger.info(f"'{file_path}' をGoogle Sheetsにインポートします...")
+        
+        # 1. パーサーを選択してファイルをパース
+        if file_format == 'tradingview':
+            from src.parsers.tradingview import TradingViewParser
+            parser = TradingViewParser()
+        elif file_format == 'seekingalpha':
+            from src.parsers.seekingalpha import SeekingAlphaParser
+            parser = SeekingAlphaParser()
+        else:
+            # このケースはChoiceによって弾かれるはず
+            raise ValueError(f"未サポートのファイル形式です: {file_format}")
+            
+        platform_data = parser.parse(file_path)
+        
+        # 2. データをStockDataに変換
+        from src.converters.format_converter import FormatConverter
+        converter = FormatConverter()
+        stock_data_list = [converter.to_stock_data(d) for d in platform_data]
+        
+        # 3. GoogleSheetsClientを使ってシートを更新
+        auth_manager = GoogleSheetsAuth(
+            credentials_file=config.google_sheets.credentials_file,
+            token_file=config.google_sheets.token_file,
+            scopes=[
+                "https://www.googleapis.com/auth/spreadsheets",
+                "https://www.googleapis.com/auth/drive"
+            ]
+        )
+        from src.google_sheets.client import GoogleSheetsClient
+        sheets_client = GoogleSheetsClient(auth_manager)
+        
+        sheets_client.update_sheet_with_data(spreadsheet_id, sheet_name, stock_data_list)
+        
+        click.echo(f"正常にインポートが完了しました。{len(stock_data_list)}件のデータが'{sheet_name}'シートに書き込まれました。")
+        logger.info("インポート処理が正常に完了しました。")
+
+    except Exception as e:
+        logger.error(f"インポート処理中にエラーが発生しました: {e}")
+        click.echo(f"エラー: {e}", err=True)
+        ctx.exit(1)
+
+@sheets.command('export')
+@click.option('--spreadsheet-id', required=True, help='エクスポート元のスプレッドシートID')
+@click.option('--sheet-name', default='Stock_Data', help='エクスポート元のシート名')
+@click.option('--format', 'output_format', required=True, type=click.Choice(['tradingview', 'seekingalpha', 'csv']), help='エクスポートするファイル形式')
+@click.option('--output', 'output_path', type=click.Path(), help='出力ファイルパス (指定しない場合、標準出力)')
+@click.pass_context
+def sheets_export(ctx: click.Context, spreadsheet_id: str, sheet_name: str, output_format: str, output_path: Optional[str]):
+    """Google Sheetsのデータをローカルファイルにエクスポートする"""
+    logger = get_logger('main')
+    config: AppConfig = ctx.obj['config']
+    
+    try:
+        logger.info(f"Google Sheetsから'{sheet_name}'シートのデータをエクスポートします...")
+        
+        # 1. GoogleSheetsClientを使ってデータを取得
+        auth_manager = GoogleSheetsAuth(
+            credentials_file=config.google_sheets.credentials_file,
+            token_file=config.google_sheets.token_file,
+            scopes=["https://www.googleapis.com/auth/spreadsheets"]
+        )
+        from src.google_sheets.client import GoogleSheetsClient
+        sheets_client = GoogleSheetsClient(auth_manager)
+        
+        records = sheets_client.get_all_records(spreadsheet_id, sheet_name)
+        
+        # 2. レコードをStockDataに変換
+        from src.converters.format_converter import FormatConverter
+        converter = FormatConverter()
+        stock_data_list = converter.from_records(records)
+        
+        # 3. 指定されたフォーマットに変換
+        from src.converters.format_converter import FormatConverter
+        converter = FormatConverter()
+        output_content = ""
+
+        if output_format == "tradingview":
+            tv_data_list = [converter.to_platform_data(d, "tradingview") for d in stock_data_list]
+            output_content = converter.convert_to_tradingview_txt(tv_data_list, preserve_sections=True)
+        elif output_format in ["seekingalpha", "csv"]:
+            sa_data_list = [converter.to_platform_data(d, "seekingalpha") for d in stock_data_list]
+            output_content = converter.convert_to_csv(sa_data_list)
+        else:
+            raise ValueError(f"未サポートの出力形式です: {output_format}")
+
+        # 4. 結果を出力
+        if output_path:
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write(output_content)
+            click.echo(f"正常にエクスポートが完了しました。{output_path} に出力しました。")
+        else:
+            click.echo(output_content)
+        
+        logger.info("エクスポート処理が正常に完了しました。")
+
+    except Exception as e:
+        logger.error(f"エクスポート処理中にエラーが発生しました: {e}")
+        click.echo(f"エラー: {e}", err=True)
+        ctx.exit(1)
+
 # cliにauthコマンドグループを追加
 cli.add_command(auth)
 

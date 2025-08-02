@@ -227,3 +227,28 @@ class FormatConverter:
             output_lines.append(",".join(symbols))
         
         return "\n".join(output_lines)
+
+    def from_records(self, records: List[Dict[str, Any]]) -> List[StockData]:
+        """gspreadのget_all_records()で取得した辞書のリストからStockDataのリストを作成する"""
+        stock_data_list = []
+        for rec in records:
+            # Pydanticモデルのフィールド名とシートのヘッダー名を柔軟にマッピング
+            # (例: Company_Name -> company_name)
+            mapped_rec = {key.lower(): val for key, val in rec.items()}
+            
+            # 必須フィールドの補完
+            symbol = mapped_rec.get("symbol", "")
+            exchange = mapped_rec.get("exchange", "")
+            if symbol and exchange and not mapped_rec.get("full_symbol"):
+                mapped_rec["full_symbol"] = f"{exchange}:{symbol}"
+            
+            # source_platformがなければデフォルト値を設定
+            if not mapped_rec.get("source_platform"):
+                mapped_rec["source_platform"] = "googlesheets"
+
+            try:
+                stock_data_list.append(StockData(**mapped_rec))
+            except Exception as e:
+                logger.warning(f"レコードの変換に失敗しました: {rec}, エラー: {e}")
+                continue
+        return stock_data_list
