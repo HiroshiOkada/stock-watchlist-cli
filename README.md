@@ -11,37 +11,41 @@ TradingView、Seeking Alpha、Google Sheets間でのデータ変換を行うコ�
 - **Google Sheets連携**: OAuth2.0認証によるデータ同期
 - **プラットフォーム間変換**: 各形式間での双方向データ変換
 
-## インストール
+## 実行方法
 
 ### 前提条件
-
 - Python 3.8以上
-- uv (推奨) または pip
+- [uv](https://github.com/astral-sh/uv)
 
-### uvを使用したインストール
-
-```bash
-# リポジトリのクローン
-git clone <repository-url>
-cd stock-watchlist-cli
-
-# 仮想環境の作成
-uv venv
-source .venv/bin/activate
-
-# 依存関係のインストール
-uv pip install -e ".[dev]"
-```
-
-### 環境設定
+### `uvx` を使った直接実行 (推奨)
+このツールは `uvx` を使うことで、リポジトリをクローンせずに直接実行できます。
 
 ```bash
-# 環境変数ファイルの作成
-cp .env.example .env
+# ヘルプの表示
+uvx git+https://github.com/HiroshiOkada/stock-watchlist-cli stock-cli --help
 
-# .envファイルを編集してGoogle認証ファイルパスを設定
-# GOOGLE_CREDENTIALS_FILE=~/dot.hiroshi-project-2025.client_secret.json
+# ファイル変換の実行例
+uvx git+https://github.com/HiroshiOkada/stock-watchlist-cli stock-cli convert --from tradingview --to csv --input watchlist.txt
 ```
+
+### Google認証の設定
+Google Sheets連携機能を使用するには、初回のみ認証設定が必要です。
+
+1.  **設定ファイルの準備**:
+    `credentials.json`（Google Cloudからダウンロード）と、空の`.env`ファイルをツールの実行ディレクトリに配置します。
+
+2.  **`.env`ファイルに追記**:
+    以下の1行を`.env`ファイルに記述し、`credentials.json`へのパスを指定します。
+    ```
+    GOOGLE_CREDENTIALS_FILE=./credentials.json
+    ```
+
+3.  **認証コマンドの実行**:
+    以下のコマンドを実行すると、ブラウザが起動し認証プロセスが開始されます。
+    ```bash
+    uvx git+https://github.com/HiroshiOkada/stock-watchlist-cli stock-cli auth setup
+    ```
+    認証が完了すると、同ディレクトリに`token.json`が生成され、以降は自動で認証が行われます。
 
 ## コマンドリファレンス
 
@@ -77,21 +81,38 @@ stock-cli sheets export --spreadsheet-id "your_sheet_id" --format tradingview --
 ### `analyze`
 データ分析機能です。（現在、コマンドの骨組みのみで実装されていません）
 
-## 開発
+## 開発者向け情報
 
 ### 開発環境のセットアップ
+ソースコードを編集・開発する場合は、リポジトリをクローンしてセットアップします。
 
 ```bash
-# 開発依存関係のインストール
-uv pip install -e ".[dev]"
+# リポジトリのクローン
+git clone https://github.com/HiroshiOkada/stock-watchlist-cli.git
+cd stock-watchlist-cli
 
-# コード品質チェック
+# 仮想環境の作成と有効化
+uv venv
+source .venv/bin/activate
+
+# 開発依存関係を含む全パッケージをインストール
+uv pip install -e ".[dev]"
+```
+
+### コード品質とテスト
+
+```bash
+# コードフォーマット
 black src/ tests/
+
+# リンター
 flake8 src/ tests/
+
+# 型チェック
 mypy src/
 
 # テスト実行
-pytest
+uv run pytest
 ```
 
 ### プロジェクト構造
