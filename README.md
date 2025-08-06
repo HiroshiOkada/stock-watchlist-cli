@@ -22,10 +22,10 @@ TradingView、Seeking Alpha、Google Sheets間でのデータ変換を行うコ�
 
 ```bash
 # ヘルプの表示
-uvx git+https://github.com/HiroshiOkada/stock-watchlist-cli stock-cli --help
+uvx --from stock-watchlist-cli stock-cli --help
 
 # ファイル変換の実行例
-uvx git+https://github.com/HiroshiOkada/stock-watchlist-cli stock-cli convert --from tradingview --to csv --input watchlist.txt
+uvx --from stock-watchlist-cli stock-cli convert --from tradingview --to csv --input watchlist.txt
 ```
 
 ### Google認証の設定
@@ -43,7 +43,7 @@ Google Sheets連携機能を使用するには、初回のみ認証設定が必�
 3.  **認証コマンドの実行**:
     以下のコマンドを実行すると、ブラウザが起動し認証プロセスが開始されます。
     ```bash
-    uvx git+https://github.com/HiroshiOkada/stock-watchlist-cli stock-cli auth setup
+    uvx --from stock-watchlist-cli stock-cli auth setup
     ```
     認証が完了すると、同ディレクトリに`token.json`が生成され、以降は自動で認証が行われます。
 
