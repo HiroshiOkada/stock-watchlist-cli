@@ -109,7 +109,8 @@ class ConfigManager:
         config_path = Path(self.config_file)
         
         if not config_path.exists():
-            raise FileNotFoundError(f"設定ファイルが見つかりません: {config_path}")
+            # 設定ファイルが見つからない場合は、デフォルトの設定を使用
+            return self._get_default_config()
         
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
@@ -117,6 +118,48 @@ class ConfigManager:
         except yaml.YAMLError as e:
             raise ValueError(f"YAML設定ファイルの解析に失敗しました: {e}")
     
+    def _get_default_config(self) -> Dict[str, Any]:
+        """デフォルトの設定を返す"""
+        return {
+            "google_sheets": {
+                "credentials_file": "${GOOGLE_CREDENTIALS_FILE}",
+                "token_file": "${GOOGLE_TOKEN_FILE}",
+                "oauth_port": 8080,
+                "default_spreadsheet_id": "",
+                "sheet_name": "Stock_Data",
+                "batch_size": 100
+            },
+            "platforms": {
+                "tradingview": {
+                    "encoding": "utf-8",
+                    "include_exchange_prefix": True,
+                    "supported_exchanges": ["NASDAQ", "NYSE", "AMEX", "TSE", "LSE", "FRA"]
+                },
+                "seekingalpha": {
+                    "default_quantity": 0,
+                    "default_cost": 0.0,
+                    "required_sheets": ["Summary", "Ratings", "Holdings", "Dividends"]
+                }
+            },
+            "logging": {
+                "level": "${LOG_LEVEL:INFO}",
+                "file": "${LOG_FILE:stock_cli.log}",
+                "max_size": "10MB",
+                "backup_count": 5,
+                "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            },
+            "conversion": {
+                "symbol_mapping_file": "symbol_mapping.json",
+                "auto_detect_exchange": True,
+                "fallback_exchange": "NASDAQ",
+                "preserve_sections": True
+            },
+            "development": {
+                "debug_mode": "${DEVELOPMENT_MODE:false}",
+                "test_data_dir": "tests/sample_data",
+                "mock_google_api": False
+            }
+        }
     def _substitute_env_vars(self, data: Any) -> Any:
         """環境変数による置換を行う"""
         if isinstance(data, dict):
