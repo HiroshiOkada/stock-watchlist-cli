@@ -72,3 +72,23 @@ def test_config_loading_failure(mocker):
     assert result.exit_code == 1
     # エラーメッセージがstderrに出力されることを確認
     assert "設定ファイルの読み込みに失敗しました" in result.output
+
+def test_config_default_token_file():
+    """デフォルトのトークンファイル設定が正しく読み込まれることを確認する"""
+    from src.config.settings import ConfigManager
+    import tempfile
+    import os
+    
+    # 一時ディレクトリを作成
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        # 空の.envファイルを作成
+        env_file = os.path.join(tmp_dir, ".env")
+        with open(env_file, "w") as f:
+            f.write("GOOGLE_CREDENTIALS_FILE=./credentials.json\n")
+        
+        # ConfigManagerを作成
+        config_manager = ConfigManager(env_file=env_file)
+        config = config_manager.load_config()
+        
+        # トークンファイルのデフォルト値が正しく設定されていることを確認
+        assert config.google_sheets.token_file == "token.json"

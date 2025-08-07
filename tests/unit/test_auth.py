@@ -110,3 +110,26 @@ class TestGoogleSheetsAuth:
         
         mock_authorize.assert_called_once()
         assert client is not None
+
+    def test_token_file_default_value(self, tmp_path, mocker):
+        """トークンファイルのデフォルト値が正しく設定されることをテスト"""
+        # ダミーの認証ファイルを作成
+        creds_path = tmp_path / CREDENTIALS_FILE
+        creds_path.write_text(json.dumps({
+            "installed": {
+                "client_id": "test_client_id",
+                "client_secret": "test_client_secret",
+                "redirect_uris": ["http://localhost"],
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token"
+            }
+        }))
+        
+        # GOOGLE_TOKEN_FILE環境変数を設定しないで初期化
+        manager = GoogleSheetsAuth(
+            credentials_file=str(creds_path),
+            token_file="token.json",  # デフォルト値
+            scopes=SCOPES
+        )
+        
+        assert manager.token_file.name == "token.json"

@@ -123,7 +123,7 @@ class ConfigManager:
         return {
             "google_sheets": {
                 "credentials_file": "${GOOGLE_CREDENTIALS_FILE}",
-                "token_file": "${GOOGLE_TOKEN_FILE}",
+                "token_file": "${GOOGLE_TOKEN_FILE:token.json}",
                 "oauth_port": 8080,
                 "default_spreadsheet_id": "",
                 "sheet_name": "Stock_Data",
