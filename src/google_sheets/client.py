@@ -124,4 +124,31 @@ class GoogleSheetsClient:
             raise
         except Exception as e:
             logger.error(f"シートの更新中にエラーが発生しました: {e}")
+
+    def sheet_exists(self, spreadsheet_id: str, sheet_name: str) -> bool:
+        """指定したシートが存在するかを確認する"""
+        try:
+            spreadsheet = self.get_spreadsheet_by_id(spreadsheet_id)
+            spreadsheet.worksheet(sheet_name)
+            return True
+        except gspread.exceptions.WorksheetNotFound:
+            return False
+        except Exception as e:
+            logger.error(f"シートの存在確認中にエラーが発生しました: {e}")
+            raise
+
+    def create_sheet(self, spreadsheet_id: str, sheet_name: str) -> Worksheet:
+        """新しいシートを作成する"""
+        try:
+            spreadsheet = self.get_spreadsheet_by_id(spreadsheet_id)
+            worksheet = spreadsheet.add_worksheet(title=sheet_name, rows=1000, cols=26)
+            logger.info(f"シートを作成しました: {sheet_name}")
+            
+            # デフォルトのヘッダーを設定
+            self.setup_default_headers(spreadsheet, worksheet.id)
+            
+            return worksheet
+        except Exception as e:
+            logger.error(f"シートの作成に失敗しました: {e}")
+            raise
             raise

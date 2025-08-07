@@ -156,15 +156,22 @@ def sheets() -> None:
 @click.option('--file', 'file_path', required=True, type=click.Path(exists=True), help='インポートするファイルパス')
 @click.option('--format', 'file_format', required=True, type=PrefixChoice(['tradingview', 'seekingalpha']), help='インポートするファイル形式')
 @click.option('--spreadsheet-id', required=True, help='インポート先のスプレッドシートID')
-@click.option('--sheet-name', default='Stock_Data', help='インポート先のシート名')
+@click.option('--sheet-name', default=None, help='インポート先のシート名')
 @click.pass_context
-def sheets_import(ctx: click.Context, file_path: str, file_format: str, spreadsheet_id: str, sheet_name: str):
+def sheets_import(ctx: click.Context, file_path: str, file_format: str, spreadsheet_id: str, sheet_name: Optional[str]):
     """ローカルファイルをGoogle Sheetsにインポートする"""
     logger = get_logger('main')
     config: AppConfig = ctx.obj['config']
     
     try:
         logger.info(f"'{file_path}' をGoogle Sheetsにインポートします...")
+        
+        # シート名が指定されていない場合は、ファイル名からシート名を生成
+        if sheet_name is None:
+            import os
+            # ファイル名から拡張子を除いた部分をシート名とする
+            sheet_name = os.path.splitext(os.path.basename(file_path))[0]
+            logger.info(f"シート名が指定されていないため、ファイル名からシート名を生成: {sheet_name}")
         
         # 1. パーサーを選択してファイルをパース
         if file_format == 'tradingview':
@@ -195,6 +202,11 @@ def sheets_import(ctx: click.Context, file_path: str, file_format: str, spreadsh
         )
         from src.google_sheets.client import GoogleSheetsClient
         sheets_client = GoogleSheetsClient(auth_manager)
+        
+        # シートが存在しない場合は作成
+        if not sheets_client.sheet_exists(spreadsheet_id, sheet_name):
+            logger.info(f"シート '{sheet_name}' が存在しないため、新規作成します。")
+            sheets_client.create_sheet(spreadsheet_id, sheet_name)
         
         sheets_client.update_sheet_with_data(spreadsheet_id, sheet_name, stock_data_list)
         

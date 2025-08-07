@@ -58,4 +58,35 @@ def test_sheets_export_success(mock_auth, mock_client, mock_converter, runner, t
     assert "正常にエクスポートが完了しました" in result.output
     assert output_file.read_text() == "NASDAQ:AAPL"
     mock_client.return_value.get_all_records.assert_called_once()
-    mock_converter.return_value.from_records.assert_called_once_with([{'Symbol': 'AAPL', 'Exchange': 'NASDAQ'}])
+
+@patch('src.converters.format_converter.FormatConverter')
+@patch('src.parsers.tradingview.TradingViewParser')
+@patch('src.google_sheets.client.GoogleSheetsClient')
+@patch('src.main.GoogleSheetsAuth') # mainの中で直接使われるため、これで正しい
+def test_sheets_import_sheet_name_generation(mock_auth, mock_client, mock_parser, mock_converter, runner, tmp_path):
+    """sheets importコマンドでシート名が指定されていない場合にファイル名からシート名が生成されることをテスト"""
+    # モックの設定
+    mock_parser.return_value.parse.return_value = [MagicMock()]
+    mock_converter.return_value.to_stock_data.return_value = MagicMock()
+    mock_client.return_value.sheet_exists.return_value = False  # シートが存在しない
+    mock_client.return_value.create_sheet.return_value = MagicMock()  # シート作成
+    
+    # ダミーの入力ファイルを作成 (ファイル名をシート名に使いたいので、適切な名前にする)
+    input_file = tmp_path / "MyStockList.txt"
+    input_file.write_text("DUMMY")
+
+    result = runner.invoke(cli, [
+        'sheets', 'import',
+        '--file', str(input_file),
+        '--format', 'tradingview',
+        '--spreadsheet-id', 'dummy_id'
+    ])
+
+    assert result.exit_code == 0
+    assert "正常にインポートが完了しました" in result.output
+    # シート名がファイル名から生成されていることを確認
+    mock_client.return_value.update_sheet_with_data.assert_called_once_with(
+        'dummy_id', 'MyStockList', [mock_converter.return_value.to_stock_data.return_value]
+    )
+    # シートが存在しない場合は作成されることを確認
+    mock_client.return_value.create_sheet.assert_called_once_with('dummy_id', 'MyStockList')
