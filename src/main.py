@@ -11,7 +11,7 @@ from src.utils.param_utils import PrefixChoice
 
 
 @click.group()
-@click.version_option(version="0.1.4", prog_name="stock-cli")
+@click.version_option(version="0.1.5", prog_name="stock-cli")
 @click.option('--config', '-c', help='設定ファイルパス')
 @click.option('--verbose', '-v', is_flag=True, help='詳細ログを表示')
 @click.pass_context
