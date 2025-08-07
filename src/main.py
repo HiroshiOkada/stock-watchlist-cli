@@ -6,6 +6,7 @@ from typing import Optional
 from src.utils.logging_config import setup_logging, get_logger
 from src.config.settings import get_config, AppConfig
 from src.google_sheets.auth import GoogleSheetsAuth
+from src.converters.format_converter import FormatConverter
 
 
 @click.group()
