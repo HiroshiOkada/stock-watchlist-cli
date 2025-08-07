@@ -7,10 +7,11 @@ from src.utils.logging_config import setup_logging, get_logger
 from src.config.settings import get_config, AppConfig
 from src.google_sheets.auth import GoogleSheetsAuth
 from src.converters.format_converter import FormatConverter
+from src.utils.param_utils import PrefixChoice
 
 
 @click.group()
-@click.version_option(version="0.1.0", prog_name="stock-cli")
+@click.version_option(version="0.1.3", prog_name="stock-cli")
 @click.option('--config', '-c', help='設定ファイルパス')
 @click.option('--verbose', '-v', is_flag=True, help='詳細ログを表示')
 @click.pass_context
@@ -40,9 +41,9 @@ def cli(ctx: click.Context, config: Optional[str], verbose: bool) -> None:
 # この時点ではサブコマンドはまだ実装しない
 
 @cli.command()
-@click.option('--from', 'from_format', required=True, type=click.Choice(['tradingview', 'seekingalpha']),
+@click.option('--from', 'from_format', required=True, type=PrefixChoice(['tradingview', 'seekingalpha']),
               help='変換元のファイル形式 (tradingview, seekingalpha)')
-@click.option('--to', 'to_format', required=True, type=click.Choice(['tradingview', 'seekingalpha', 'csv']),
+@click.option('--to', 'to_format', required=True, type=PrefixChoice(['tradingview', 'seekingalpha', 'csv']),
               help='変換先のファイル形式 (tradingview, seekingalpha, csv)')
 @click.option('--input', 'input_path', required=True, type=click.Path(exists=True),
               help='入力ファイルパス')

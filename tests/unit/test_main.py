@@ -92,3 +92,35 @@ def test_config_default_token_file():
         
         # トークンファイルのデフォルト値が正しく設定されていることを確認
         assert config.google_sheets.token_file == "token.json"
+
+def test_prefix_choice():
+    """前方一致によるパラメータ省略機能が正しく動作することを確認する"""
+    from src.utils.param_utils import PrefixChoice
+    import click
+    
+    # PrefixChoiceを作成
+    prefix_choice = PrefixChoice(['tradingview', 'seekingalpha', 'csv'])
+    
+    # 完全一致のテスト
+    assert prefix_choice.convert('tradingview', None, None) == 'tradingview'
+    assert prefix_choice.convert('seekingalpha', None, None) == 'seekingalpha'
+    assert prefix_choice.convert('csv', None, None) == 'csv'
+    
+    # 前方一致のテスト
+    assert prefix_choice.convert('trading', None, None) == 'tradingview'
+    assert prefix_choice.convert('tra', None, None) == 'tradingview'
+    assert prefix_choice.convert('t', None, None) == 'tradingview'
+    assert prefix_choice.convert('seeking', None, None) == 'seekingalpha'
+    assert prefix_choice.convert('seek', None, None) == 'seekingalpha'
+    assert prefix_choice.convert('s', None, None) == 'seekingalpha'
+    
+    # 大文字小文字のテスト
+    assert prefix_choice.convert('TRADING', None, None) == 'tradingview'
+    assert prefix_choice.convert('SEEKING', None, None) == 'seekingalpha'
+    
+    # 不正な値のテスト（例外が発生することを確認）
+    try:
+        prefix_choice.convert('invalid', None, None)
+        assert False, "例外が発生するはず"
+    except click.BadParameter:
+        pass  # 期待通りの例外
