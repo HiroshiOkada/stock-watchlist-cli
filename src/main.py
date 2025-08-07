@@ -154,7 +154,7 @@ def sheets() -> None:
 
 @sheets.command('import')
 @click.option('--file', 'file_path', required=True, type=click.Path(exists=True), help='インポートするファイルパス')
-@click.option('--format', 'file_format', required=True, type=click.Choice(['tradingview', 'seekingalpha']), help='インポートするファイル形式')
+@click.option('--format', 'file_format', required=True, type=PrefixChoice(['tradingview', 'seekingalpha']), help='インポートするファイル形式')
 @click.option('--spreadsheet-id', required=True, help='インポート先のスプレッドシートID')
 @click.option('--sheet-name', default='Stock_Data', help='インポート先のシート名')
 @click.pass_context
@@ -209,7 +209,7 @@ def sheets_import(ctx: click.Context, file_path: str, file_format: str, spreadsh
 @sheets.command('export')
 @click.option('--spreadsheet-id', required=True, help='エクスポート元のスプレッドシートID')
 @click.option('--sheet-name', default='Stock_Data', help='エクスポート元のシート名')
-@click.option('--format', 'output_format', required=True, type=click.Choice(['tradingview', 'seekingalpha', 'csv']), help='エクスポートするファイル形式')
+@click.option('--format', 'output_format', required=True, type=PrefixChoice(['tradingview', 'seekingalpha', 'csv']), help='エクスポートするファイル形式')
 @click.option('--output', 'output_path', type=click.Path(), help='出力ファイルパス (指定しない場合、標準出力)')
 @click.pass_context
 def sheets_export(ctx: click.Context, spreadsheet_id: str, sheet_name: str, output_format: str, output_path: Optional[str]):

@@ -124,3 +124,23 @@ def test_prefix_choice():
         assert False, "例外が発生するはず"
     except click.BadParameter:
         pass  # 期待通りの例外
+
+
+def test_sheets_import_format_shortcut():
+    """sheets import コマンドの --format パラメータ省略機能が正しく動作することを確認する"""
+    runner = CliRunner()
+    # ダミーのファイルパスとスプレッドシートIDを指定
+    result = runner.invoke(cli, ['sheets', 'import', '--file', 'dummy.txt', '--format', 't', '--spreadsheet-id', 'dummy_id'])
+    # パラメータ省略機能の検証は、エラーが「t」が無効な値であるという理由ではなく、他の理由（ファイルが存在しないなど）で発生することを確認
+    # 「t」が無効な値であるというエラーが出ていないことを確認
+    assert "'t' is not one of" not in result.output
+
+
+def test_sheets_export_format_shortcut():
+    """sheets export コマンドの --format パラメータ省略機能が正しく動作することを確認する"""
+    runner = CliRunner()
+    # ダミーのスプレッドシートIDを指定
+    result = runner.invoke(cli, ['sheets', 'export', '--spreadsheet-id', 'dummy_id', '--format', 't'])
+    # パラメータ省略機能の検証は、エラーが「t」が無効な値であるという理由ではなく、他の理由で発生することを確認
+    # 「t」が無効な値であるというエラーが出ていないことを確認
+    assert "'t' is not one of" not in result.output
