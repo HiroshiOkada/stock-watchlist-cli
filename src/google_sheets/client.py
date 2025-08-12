@@ -155,3 +155,17 @@ class GoogleSheetsClient:
             logger.error(f"シートの作成に失敗しました: {e}")
             raise
             raise
+
+    def clear_sheet(self, spreadsheet_id: str, sheet_name: str) -> None:
+        """指定したシートの全内容をクリアする（書式は維持）"""
+        try:
+            spreadsheet = self.get_spreadsheet_by_id(spreadsheet_id)
+            worksheet = spreadsheet.worksheet(sheet_name)
+            worksheet.clear()
+            logger.info(f"'{sheet_name}' の内容をクリアしました。")
+        except gspread.exceptions.WorksheetNotFound:
+            logger.error(f"ワークシートが見つかりません: {sheet_name}")
+            raise
+        except Exception as e:
+            logger.error(f"シートのクリア中にエラーが発生しました: {e}")
+            raise

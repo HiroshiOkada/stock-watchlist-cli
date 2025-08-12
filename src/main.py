@@ -203,10 +203,19 @@ def sheets_import(ctx: click.Context, file_path: str, file_format: str, spreadsh
         from src.google_sheets.client import GoogleSheetsClient
         sheets_client = GoogleSheetsClient(auth_manager)
         
-        # シートが存在しない場合は作成
+        # シートの存在確認とハンドリング
         if not sheets_client.sheet_exists(spreadsheet_id, sheet_name):
             logger.info(f"シート '{sheet_name}' が存在しないため、新規作成します。")
             sheets_client.create_sheet(spreadsheet_id, sheet_name)
+        else:
+            # 同名シートがある場合は、クリアするか確認
+            click.echo(f"注意: シート '{sheet_name}' は既に存在します。全クリアして上書きしますか？")
+            if not click.confirm("続行する場合は Y(es) を入力してください", default=False):
+                click.echo("インポートを中止しました（既存シートは変更されていません）。")
+                logger.info("ユーザーの選択によりインポートを中止しました。")
+                return
+            # クリアしてから書き込み
+            sheets_client.clear_sheet(spreadsheet_id, sheet_name)
         
         sheets_client.update_sheet_with_data(spreadsheet_id, sheet_name, stock_data_list)
         
