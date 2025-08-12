@@ -88,7 +88,7 @@ stock-cli sheets export --spreadsheet-id "your_sheet_id" --format tradingview --
 ```
 
 ### `analyze`
-データ分析機能です。（現在、コマンドの骨組みのみで実装されていません）
+データ分析機能です。（将来の拡張用プレースホルダー）
 
 ## 開発者向け情報
 

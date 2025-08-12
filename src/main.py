@@ -51,11 +51,9 @@ def cli(ctx: click.Context, config: Optional[str], verbose: bool) -> None:
               help='出力ファイルパス (指定しない場合、標準出力)')
 @click.option('--preserve-sections', is_flag=True,
               help='TradingView形式への変換時にセクション情報を保持する')
-@click.option('--create-sections-by-sector', is_flag=True,
-              help='SeekingAlphaからTradingViewへの変換時にセクターでセクションを作成する')
 @click.pass_context
 def convert(ctx: click.Context, from_format: str, to_format: str, input_path: str,
-            output_path: Optional[str], preserve_sections: bool, create_sections_by_sector: bool) -> None:
+            output_path: Optional[str], preserve_sections: bool) -> None:
     """ファイル形式変換コマンド"""
     logger = get_logger('main')
     converter = FormatConverter()
