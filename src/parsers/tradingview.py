@@ -14,7 +14,8 @@ class TradingViewParser(BaseParser):
     
     def __init__(self):
         self.supported_exchanges = ['NASDAQ', 'NYSE', 'AMEX', 'TSE', 'LSE', 'FRA']
-        self.section_pattern = r'^###(SECTION\s*.+)$'
+        # '###<name>' も '###SECTION <name>' も許容
+        self.section_pattern = r'^###(?:SECTION\s*)?(.+)$'
         self.symbol_pattern = r'^(?P<exchange>[A-Z]+):(?P<symbol>[A-Z0-9\.\-]+)$'
     
     def parse(self, file_path: Union[str, Path]) -> List[TradingViewData]:

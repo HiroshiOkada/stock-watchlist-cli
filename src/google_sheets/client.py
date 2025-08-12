@@ -154,7 +154,6 @@ class GoogleSheetsClient:
         except Exception as e:
             logger.error(f"シートの作成に失敗しました: {e}")
             raise
-            raise
 
     def clear_sheet(self, spreadsheet_id: str, sheet_name: str) -> None:
         """指定したシートの全内容をクリアする（書式は維持）"""

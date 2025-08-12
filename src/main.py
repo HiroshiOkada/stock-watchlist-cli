@@ -38,8 +38,6 @@ def cli(ctx: click.Context, config: Optional[str], verbose: bool) -> None:
         click.echo(message, err=True)
         ctx.exit(1)
 
-# この時点ではサブコマンドはまだ実装しない
-
 @cli.command()
 @click.option('--from', 'from_format', required=True, type=PrefixChoice(['tradingview', 'seekingalpha']),
               help='変換元のファイル形式 (tradingview, seekingalpha)')
@@ -185,7 +183,6 @@ def sheets_import(ctx: click.Context, file_path: str, file_format: str, spreadsh
         platform_data = parser.parse(file_path)
         
         # 2. データをStockDataに変換
-        from src.converters.format_converter import FormatConverter
         converter = FormatConverter()
         stock_data_list = [converter.to_stock_data(d) for d in platform_data]
         
@@ -251,13 +248,10 @@ def sheets_export(ctx: click.Context, spreadsheet_id: str, sheet_name: str, outp
         records = sheets_client.get_all_records(spreadsheet_id, sheet_name)
         
         # 2. レコードをStockDataに変換
-        from src.converters.format_converter import FormatConverter
         converter = FormatConverter()
         stock_data_list = converter.from_records(records)
         
         # 3. 指定されたフォーマットに変換
-        from src.converters.format_converter import FormatConverter
-        converter = FormatConverter()
         output_content = ""
 
         if output_format == "tradingview":

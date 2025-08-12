@@ -139,7 +139,6 @@ class FormatConverter:
         StockDataをSeekingAlphaDataに変換する内部メソッド。
         """
         logger.info(f"StockDataをSeekingAlphaDataに変換中: {stock_data.symbol}")
-        logger.info(f"StockDataをSeekingAlphaDataに変換中: {stock_data.symbol}")
         sa_data_dict = stock_data.model_dump(exclude_none=True)
         # nameをcompany_nameにマッピング
         if 'name' in sa_data_dict:
