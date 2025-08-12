@@ -27,10 +27,10 @@ class GoogleSheetsClient:
             logger.info(f"スプレッドシートを作成しました: {name} (ID: {spreadsheet.id})")
             
             # デフォルトのヘッダーを設定
-            self.setup_default_headers(spreadsheet)
+            worksheet = spreadsheet.get_worksheet(0)
+            self.setup_default_headers(worksheet)
             
             # デフォルトのシート名を "Stock_Data" に変更
-            worksheet = spreadsheet.get_worksheet(0)
             worksheet.update_title("Stock_Data")
             logger.info("デフォルトのシート名を 'Stock_Data' に変更しました。")
 
@@ -67,10 +67,9 @@ class GoogleSheetsClient:
             logger.error(f"レコードの取得中にエラーが発生しました: {e}")
             raise
 
-    def setup_default_headers(self, spreadsheet: Spreadsheet, sheet_index: int = 0) -> None:
-        """指定したシートにデフォルトのヘッダーを設定する"""
+    def setup_default_headers(self, worksheet: Worksheet) -> None:
+        """指定したワークシートにデフォルトのヘッダーを設定する"""
         try:
-            worksheet = spreadsheet.get_worksheet(sheet_index)
             headers = [
                 "Symbol", "Exchange", "Company_Name", "Current_Price",
                 "Source_Platform", "TradingView_Section", "Quant_Rating",
@@ -93,7 +92,7 @@ class GoogleSheetsClient:
             headers = worksheet.row_values(1)
             if not headers:
                 logger.warning(f"'{sheet_name}'にヘッダーが見つかりません。デフォルトヘッダーを設定します。")
-                self.setup_default_headers(spreadsheet, worksheet.id)
+                self.setup_default_headers(worksheet)
                 headers = worksheet.row_values(1)
 
             # StockDataをヘッダー順のリストのリストに変換
@@ -101,7 +100,11 @@ class GoogleSheetsClient:
             for stock in data:
                 row = []
                 for header in headers:
-                    value = getattr(stock, header.lower(), "")
+                    attr = header.lower()
+                    # シートの見出しとStockData属性名の差異を吸収
+                    if attr == "company_name":
+                        attr = "name"
+                    value = getattr(stock, attr, "")
                     if isinstance(value, datetime):
                         row.append(value.isoformat())
                     elif value is None:
@@ -145,7 +148,7 @@ class GoogleSheetsClient:
             logger.info(f"シートを作成しました: {sheet_name}")
             
             # デフォルトのヘッダーを設定
-            self.setup_default_headers(spreadsheet, worksheet.id)
+            self.setup_default_headers(worksheet)
             
             return worksheet
         except Exception as e:
